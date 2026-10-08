@@ -7,7 +7,7 @@ const firstStudyDate = new Date("2026-10-04T00:00:00.000Z");
 const bitSeeds = [
   {
     title: "Distance and displacement",
-    content: "Separate how far something travels from where it ends up. Distance is the total length of the path and is a scalar. Displacement is the straight-line change in position from start to finish, with direction, and is a vector.",
+    content: "Separate how far something travels from where it ends up. Distance is the total length of the path and is a scalar. Displacement is the straight-line change in position from start to finish, with direction, and is a vector.\n\nA scalar has size only, such as 7 m. A vector has size and direction, such as 5 m at an angle north of east. This is why two people can take very different routes between the same two points and still have the same displacement, even though they travelled different distances.\n\nWorked example: a hiker walks 6 m east, then 8 m north. The distance walked is 6 + 8 = 14 m. The two legs are at right angles, so the displacement is the hypotenuse of a right triangle: √(6² + 8²) = √100 = 10 m, pointing between east and north.\n\nDisplacement can even be zero. A runner who jogs 3 km east and then 3 km back west has travelled 6 km, yet ends where they started. Displacement is the straight-line change in position from start to finish, with direction, and is a vector, so here it is 0 km.\n\nIn every case the distance travelled is at least as large as the magnitude of the displacement, because a straight line is the shortest path between two points.",
     takeaway: "Distance is path length; displacement is net change in position.",
     estMinutes: 18, weight: 1, topic: "Describing motion",
     cards: [
@@ -24,7 +24,7 @@ const bitSeeds = [
   },
   {
     title: "Speed and velocity",
-    content: "Describe how fast and in which direction something moves. Average speed is total distance divided by total time. Average velocity is displacement divided by time and includes direction.",
+    content: "Describe how fast and in which direction something moves. Average speed is total distance divided by total time. Average velocity is displacement divided by time and includes direction.\n\nSpeed is a scalar, so it tells you only how fast. Velocity is a vector, so it tells you how fast and which way. Both are measured in metres per second (m/s) in the SI system, though kilometres per hour (km/h) is common in everyday life. To convert km/h to m/s, divide by 3.6.\n\nWorked example: a car travels 150 km in 2 hours. Average speed is total distance divided by total time: 150 km ÷ 2 h = 75 km/h. In m/s that is 75 ÷ 3.6 ≈ 20.8 m/s.\n\nDirection matters for velocity. A runner who completes one full lap of a track has travelled the length of the track, so the average speed is not zero. But the displacement for the lap is zero, so the average velocity is zero.\n\nLikewise, a car driving around a circular track at constant speed has a constantly changing velocity, because its direction keeps changing. Constant speed does not guarantee constant velocity.",
     takeaway: "Speed = distance / time; velocity = displacement / time, with direction.",
     estMinutes: 20, weight: 1, topic: "Describing motion",
     cards: [
@@ -41,7 +41,7 @@ const bitSeeds = [
   },
   {
     title: "Acceleration",
-    content: "Acceleration is the rate of change of velocity: a = (v − u) / t. It can speed an object up, slow it down, or change its direction. It is measured in metres per second squared.",
+    content: "Acceleration is the rate of change of velocity: a = (v − u) / t. It can speed an object up, slow it down, or change its direction. It is measured in metres per second squared.\n\nHere u is the initial velocity, v is the final velocity, and t is the time taken. The unit m/s² comes from (m/s) ÷ s: an acceleration of 3 m/s² means the velocity changes by 3 m/s every second.\n\nSign shows direction. If velocity and acceleration point the same way, the object speeds up. If an object moves in the positive direction and its acceleration is negative, it is slowing down, which is often called deceleration. An object moving at constant velocity has zero acceleration.\n\nWorked example (speeding up): a cyclist goes from 2 m/s to 8 m/s in 3 s. The change in velocity is 8 − 2 = 6 m/s, so a = 6 ÷ 3 = 2 m/s².\n\nWorked example (slowing down): a car slows from 20 m/s to 10 m/s in 5 s. Then a = (10 − 20) ÷ 5 = −2 m/s². The negative sign tells you the velocity is decreasing.\n\nAcceleration does not require a change in speed. Because velocity includes direction, a car going around a bend at steady speed is still accelerating, since its direction is changing.",
     takeaway: "Acceleration is the change in velocity per unit time: a = (v − u) / t.",
     estMinutes: 20, weight: 2, topic: "Describing motion",
     cards: [
@@ -58,7 +58,7 @@ const bitSeeds = [
   },
   {
     title: "Position-time graphs",
-    content: "Read motion from a position-time graph. The slope of the graph is velocity. A straight sloped line means constant velocity, a horizontal line means the object is at rest, and a curved line means the velocity is changing.",
+    content: "Read motion from a position-time graph. The slope of the graph is velocity. A straight sloped line means constant velocity, a horizontal line means the object is at rest, and a curved line means the velocity is changing.\n\nOn a position-time graph, time runs along the horizontal axis and position along the vertical axis. To find the velocity, pick two points on the line and calculate rise over run: the change in position divided by the change in time.\n\nWorked example: a straight line rises from 0 m at 0 s to 12 m at 4 s. The slope is 12 m ÷ 4 s = 3 m/s, so the object moves at a constant 3 m/s.\n\nA steeper line means a greater speed. A horizontal line means the object is at rest, because its position is not changing, so its velocity is zero. A line sloping downward means the object is moving back toward the starting point, which is a negative velocity.\n\nIf the line curves and gets steeper, the velocity is increasing, so the object is accelerating. If it curves and flattens out, the velocity is decreasing.",
     takeaway: "On a position-time graph, slope equals velocity.",
     estMinutes: 22, weight: 2, topic: "Motion graphs",
     cards: [
@@ -75,7 +75,7 @@ const bitSeeds = [
   },
   {
     title: "Velocity-time graphs",
-    content: "Read more from a velocity-time graph. The slope is acceleration, and the area between the line and the time axis is displacement. A horizontal line means constant velocity.",
+    content: "Read more from a velocity-time graph. The slope is acceleration, and the area between the line and the time axis is displacement. A horizontal line means constant velocity.\n\nOn a velocity-time graph, time is on the horizontal axis and velocity on the vertical axis. A straight sloped line means constant acceleration, and a steeper line means a larger acceleration. A line that slopes downward means the velocity is decreasing, so the acceleration is negative.\n\nWorked example for slope: a line rises from 0 m/s at 0 s to 8 m/s at 4 s. The slope is 8 ÷ 4 = 2 m/s², so the acceleration is 2 m/s².\n\nWorked example for area: for the same graph, the area under the line is a triangle with base 4 s and height 8 m/s, so the displacement is ½ × 4 × 8 = 16 m. For a rectangle the area is simply velocity × time: a horizontal line at 5 m/s for 3 s encloses an area of 15 m.\n\nA horizontal line means constant velocity and zero acceleration. It means the object is at rest only if that line lies along the zero-velocity axis.",
     takeaway: "On a velocity-time graph, slope is acceleration and area is displacement.",
     estMinutes: 24, weight: 2, topic: "Motion graphs",
     cards: [
@@ -92,7 +92,7 @@ const bitSeeds = [
   },
   {
     title: "First equation of motion",
-    content: "For motion in a straight line with constant acceleration, the first equation of motion links velocity, time, and acceleration: v = u + at. Here u is the initial velocity and v is the final velocity.",
+    content: "For motion in a straight line with constant acceleration, the first equation of motion links velocity, time, and acceleration: v = u + at. Here u is the initial velocity and v is the final velocity.\n\nThe equation is just the definition of acceleration, a = (v − u) / t, rearranged to make v the subject. It says the final velocity is the starting velocity plus the velocity gained, which is acceleration multiplied by time. It can also be rearranged as t = (v − u) / a when you need the time.\n\nIt applies only when the acceleration is constant. If the acceleration changes during the motion, this equation cannot be used over the whole interval.\n\nWorked example: a bike starts from rest and accelerates at 2 m/s² for 5 s. Starting from rest means u = 0. Then v = u + at = 0 + (2 m/s²)(5 s) = 10 m/s.\n\nSecond example: a scooter moving at 3 m/s accelerates at 1.5 m/s² for 4 s. Then v = 3 + (1.5)(4) = 9 m/s.\n\nWhen an object slows down, a is negative. A car travelling at 12 m/s that accelerates at −3 m/s² for 2 s ends with v = 12 + (−3)(2) = 6 m/s.",
     takeaway: "Constant acceleration: v = u + at.",
     estMinutes: 22, weight: 2, topic: "Equations of motion",
     cards: [
@@ -109,7 +109,7 @@ const bitSeeds = [
   },
   {
     title: "Second equation of motion",
-    content: "The second equation of motion gives displacement under constant acceleration: s = ut + ½at². The first term is the displacement at the initial velocity, and the second term adds the extra displacement caused by acceleration.",
+    content: "The second equation of motion gives displacement under constant acceleration: s = ut + ½at². The first term is the displacement at the initial velocity, and the second term adds the extra displacement caused by acceleration.\n\nThink of it in two parts. With no acceleration, the object would travel ut at its initial velocity. Acceleration makes the velocity grow steadily, and the extra distance this adds is ½at². Notice that t is squared: doubling the time quadruples the extra displacement.\n\nThis is the area under a velocity-time graph. For constant acceleration the graph is a straight sloped line, so the area splits into a rectangle of area ut and a triangle of area ½at².\n\nWorked example: a car starts from rest and accelerates at 2 m/s² for 4 s. Starting from rest means u = 0, so the first term vanishes. Then s = ut + ½at² = 0 + ½(2)(4²) = 16 m.\n\nSecond example: a cyclist at 4 m/s accelerates at 2 m/s² for 5 s. Then s = (4)(5) + ½(2)(5²) = 20 + 25 = 45 m.",
     takeaway: "Constant acceleration: s = ut + ½at².",
     estMinutes: 26, weight: 3, topic: "Equations of motion",
     cards: [
@@ -126,7 +126,7 @@ const bitSeeds = [
   },
   {
     title: "Free fall",
-    content: "Free fall is motion under gravity alone. Near Earth's surface every freely falling object accelerates downward at about 9.8 m/s², often rounded to 10 m/s², regardless of its mass, when air resistance is negligible.",
+    content: "Free fall is motion under gravity alone. Near Earth's surface every freely falling object accelerates downward at about 9.8 m/s², often rounded to 10 m/s², regardless of its mass, when air resistance is negligible.\n\nThis can seem surprising, because a heavier object feels a larger pull of gravity. But a heavier object also has more inertia, and the two effects cancel exactly. In everyday life a feather falls more slowly than a hammer only because of air resistance. In a vacuum, with no air, they land together.\n\nBecause the acceleration is constant, the equations of motion apply with a = g. For an object dropped from rest, u = 0. Using v = u + at with u = 0 and a = g = 10 m/s², v = 30 m/s after 3 s. Using s = ½gt², the distance fallen in 3 s is ½ × 10 × 3² = 45 m.\n\nUpward motion works the same way, with g still pointing downward. A ball thrown straight up at 10 m/s loses 10 m/s of velocity every second, so it stops momentarily after 1 s. At the top its velocity is zero for an instant, but its acceleration is still g downward. It rises s = 10(1) − ½(10)(1²) = 5 m, then falls back down.",
     takeaway: "In free fall, all objects accelerate at g ≈ 9.8 m/s² regardless of mass.",
     estMinutes: 24, weight: 2, topic: "Gravity and free fall",
     cards: [
@@ -143,7 +143,7 @@ const bitSeeds = [
   },
   {
     title: "Projectile motion basics",
-    content: "A projectile moves under gravity after being launched. Its horizontal and vertical motions are independent. Horizontal velocity stays constant, ignoring air resistance, while vertical velocity changes with acceleration g downward.",
+    content: "A projectile moves under gravity after being launched. Its horizontal and vertical motions are independent. Horizontal velocity stays constant, ignoring air resistance, while vertical velocity changes with acceleration g downward.\n\nBecause the two motions are independent, you analyse them separately and link them only through the time of flight. Horizontally there is no acceleration, so distance = horizontal speed × time. Vertically the object is in free fall, so the free-fall equations apply with a = g downward.\n\nA classic consequence: if one ball is dropped and another is thrown horizontally from the same height at the same time, they land together. Both start with zero vertical velocity and share the same vertical acceleration, so the sideways motion makes no difference to the fall time.\n\nWorked example: a ball is thrown horizontally at 6 m/s from the top of a 20 m cliff. Vertically, u = 0, so s = ½gt² gives 20 = ½(10)t², so t² = 4 and t = 2 s. Horizontally, the distance from the base is 6 m/s × 2 s = 12 m.\n\nThe path of a projectile is a curve, not a straight line, because the vertical velocity keeps changing while the horizontal velocity does not. At the top of a thrown-up path the vertical velocity is momentarily zero, but gravity still acts, so the acceleration is still g downward.",
     takeaway: "Horizontal velocity is constant; vertical motion has acceleration g.",
     estMinutes: 28, weight: 3, topic: "Projectile motion",
     cards: [
@@ -160,7 +160,7 @@ const bitSeeds = [
   },
   {
     title: "Choosing the right equation",
-    content: "Solve motion problems by listing the known and unknown quantities and choosing the equation that links them. When time is not involved, use v² = u² + 2as. Keep units consistent and check that the answer is reasonable.",
+    content: "Solve motion problems by listing the known and unknown quantities and choosing the equation that links them. When time is not involved, use v² = u² + 2as. Keep units consistent and check that the answer is reasonable.\n\nThere are three equations for constant acceleration, and each leaves out one quantity. v = u + at has no displacement s. s = ut + ½at² has no final velocity v. v² = u² + 2as has no time t. Write down which of u, v, a, s, and t you know and which you want, then pick the equation that contains your unknown and leaves out the quantity you neither know nor need.\n\nMethod: draw a quick sketch and choose a positive direction. List the knowns and unknowns with units, converting if needed, for example km/h to m/s. Choose the equation. Substitute, solve, and write the answer with units. Finally, check the answer.\n\nWorked example: a car starts from rest and accelerates at 3 m/s² over a distance of 6 m. What is its final speed? Knowns: u = 0, a = 3 m/s², s = 6 m. Unknown: v. Time is not involved, so v² = u² + 2as = 0 + 2(3)(6) = 36, giving v = 6 m/s.\n\nFollow-up: how long did this take? Now u, v, and a are known, so v = u + at gives 6 = 0 + 3t, so t = 2 s.\n\nAlways sanity-check. Units should match what was asked, a negative acceleration should correspond to slowing down, and the size should make sense: a car braking at 5 m/s² is plausible, while 500 m/s² is not.",
     takeaway: "Pick the equation by what you know and what you want, then check units and reasonableness.",
     estMinutes: 28, weight: 3, topic: "Problem solving",
     cards: [
