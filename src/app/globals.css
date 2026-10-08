@@ -54,3 +54,34 @@ a:focus-visible {
   background: var(--primary-100);
   color: var(--primary-700);
 }
+
+.flashcard-scene {
+  perspective: 1200px;
+}
+
+.flashcard-inner {
+  position: relative;
+  min-height: 27rem;
+  transform-style: preserve-3d;
+  transition: transform 400ms ease;
+}
+
+.flashcard-inner.is-flipped {
+  transform: rotateY(180deg);
+}
+
+.flashcard-face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+}
+
+.flashcard-back {
+  transform: rotateY(180deg);
+}
+
+@media (min-width: 640px) {
+  .flashcard-inner {
+    min-height: 31rem;
+  }
+}

@@ -1,12 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useEffect } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, Suspense } from "react";
 import type { ReactNode } from "react";
 import { mockData } from "@/lib/mock";
 import { useStudyStore } from "@/lib/store";
 import type { Bit, Flashcard, Plan, QuizQuestion } from "@/lib/types";
+import { FlashcardsView } from "./flashcards-view";
+import { LazyGeneration } from "./lazy-generation";
+import { QuizView } from "./quiz-view";
 
 type View = "home" | "new" | "today" | "timeline" | "flashcards" | "quiz";
 
@@ -22,9 +25,12 @@ type ButtonProps = {
     href?: string;
     variant?: "primary" | "secondary" | "ghost";
     className?: string;
+    onClick?: () => void;
+    ariaLabel?: string;
+    type?: "button" | "submit";
 };
 
-export function Button({ children, href, variant = "primary", className = "" }: ButtonProps) {
+export function Button({ children, href, variant = "primary", className = "", onClick, ariaLabel, type = "button" }: ButtonProps) {
     const styles = {
         primary: "bg-primary-600 text-white shadow-sm shadow-primary-600/20 hover:bg-primary-700",
         secondary: "border border-primary-100 bg-white text-primary-700 hover:border-primary-600 hover:bg-primary-50",
@@ -33,10 +39,10 @@ export function Button({ children, href, variant = "primary", className = "" }: 
     const classes = `inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 text-sm font-bold transition-colors ${styles} ${className}`;
 
     if (href) {
-        return <Link href={href} className={classes}>{children}</Link>;
+        return <Link href={href} aria-label={ariaLabel} className={classes}>{children}</Link>;
     }
 
-    return <button type="button" className={classes}>{children}</button>;
+    return <button type={type} aria-label={ariaLabel} onClick={onClick} className={classes}>{children}</button>;
 }
 
 export function Card({ children, className = "" }: { children: ReactNode; className?: string }) {
@@ -54,6 +60,14 @@ export function ProgressBar({ value, label }: { value: number; label?: string })
     );
 }
 
+export function Skeleton({ className = "" }: { className?: string }) {
+    return <div aria-hidden="true" className={`animate-pulse rounded-xl bg-primary-50 ${className}`} />;
+}
+
+export function Toast({ message, onClose }: { message: string; onClose?: () => void }) {
+    return <div role="alert" className="fixed inset-x-4 bottom-5 z-50 mx-auto flex max-w-md items-start gap-3 rounded-2xl border border-error/20 bg-white p-4 shadow-[0_12px_40px_rgba(0,95,146,0.18)]"><span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#fff1f1] font-black text-error">!</span><p className="flex-1 text-sm font-bold leading-6 text-slate-700">{message}</p>{onClose && <button type="button" onClick={onClose} className="min-h-8 min-w-8 rounded-lg text-xl text-slate-400 hover:bg-primary-50" aria-label="Dismiss notification">×</button>}</div>;
+}
+
 export function Chip({ children, tone = "blue" }: { children: ReactNode; tone?: "blue" | "green" | "amber" | "slate" }) {
     const styles = {
         blue: "bg-primary-50 text-primary-700",
@@ -64,7 +78,7 @@ export function Chip({ children, tone = "blue" }: { children: ReactNode; tone?: 
     return <span className={`inline-flex min-h-7 items-center rounded-full px-2.5 text-xs font-bold ${styles}`}>{children}</span>;
 }
 
-function Icon({ name }: { name: "check" | "plus" | "arrow" | "spark" | "book" | "calendar" | "cards" | "quiz" | "clock" | "target" }) {
+export function Icon({ name }: { name: "check" | "plus" | "arrow" | "spark" | "book" | "calendar" | "cards" | "quiz" | "clock" | "target" }) {
     const icons = {
         check: "✓",
         plus: "+",
@@ -124,12 +138,14 @@ function PageIntro({ eyebrow, title, description, action }: { eyebrow: string; t
 }
 
 function HomeView({ data }: { data: StudyData }) {
+    const router = useRouter();
+    const seed = useStudyStore((state) => state.seed);
     const completedBits = data.bits.filter((bit) => bit.status === "done").length;
     const progress = Math.round((completedBits / data.bits.length) * 100);
     const nextBits = data.bits.filter((bit) => bit.status === "todo").slice(0, 3);
     const focusBit = nextBits[0] ?? data.bits[0];
     return <>
-        <PageIntro eyebrow={`Exam ${data.plan.examDate}`} title="Good morning, Scholar" description={`A small, focused plan for today. Keep your momentum going with ${data.bits.length} Bits on electrical circuits.`} action={<Button href="/new"><Icon name="plus" /> New material</Button>} />
+        <PageIntro eyebrow={`Exam ${data.plan.examDate}`} title="Good morning, Scholar" description={`A small, focused plan for today. Keep your momentum going with ${data.bits.length} Bits on electrical circuits.`} action={<div className="flex flex-wrap gap-2"><Button href="/new"><Icon name="plus" /> New material</Button><Button variant="secondary" onClick={() => { seed(mockData); router.push("/today"); }}>Try demo plan</Button></div>} />
         <div className="grid gap-5 lg:grid-cols-[1.4fr_0.9fr]">
             <Card className="overflow-hidden bg-primary-700 p-6 text-white sm:p-8"><div className="flex items-start justify-between gap-4"><div><Chip tone="blue">TODAY&apos;S FOCUS</Chip><h2 className="mt-5 max-w-md text-2xl font-black leading-tight sm:text-3xl">{focusBit.title}</h2><p className="mt-3 max-w-md text-sm leading-6 text-primary-100">{focusBit.takeaway}</p></div><span className="hidden text-5xl text-accent sm:block"><Icon name="spark" /></span></div><div className="mt-8 flex items-end justify-between gap-6"><div className="w-full max-w-sm"><ProgressBar value={progress} label={`${completedBits} of ${data.bits.length} Bits complete`} /></div><Button href="/today" variant="secondary" className="shrink-0 border-transparent bg-white/95">Start Bit <Icon name="arrow" /></Button></div></Card>
             <Card className="p-6"><div className="flex items-center justify-between"><div><p className="text-xs font-black uppercase tracking-[0.16em] text-slate-400">Daily target</p><p className="mt-2 text-3xl font-black text-slate-900">{data.plan.dailyMinutes}<span className="text-base text-slate-400"> min</span></p></div><span className="flex h-11 w-11 items-center justify-center rounded-full bg-[#fff5df] text-xl text-warning"><Icon name="target" /></span></div><ProgressBar value={progress} label="Plan completion" /><div className="mt-6 grid grid-cols-7 gap-1.5 text-center text-[10px] font-bold text-slate-400">{["M", "T", "W", "T", "F", "S", "S"].map((day, index) => <div key={`${day}-${index}`}><span className={`mx-auto mb-2 flex h-7 w-7 items-center justify-center rounded-full ${index < completedBits ? "bg-primary-600 text-white" : "bg-slate-100 text-slate-400"}`}>{index < completedBits ? <Icon name="check" /> : "·"}</span>{day}</div>)}</div></Card>
@@ -139,14 +155,19 @@ function HomeView({ data }: { data: StudyData }) {
 }
 
 function TodayView({ data }: { data: StudyData }) {
-    const bits = data.bits.slice(0, 3);
+    const setBitStatus = useStudyStore((state) => state.setBitStatus);
+    const today = new Date().toISOString().slice(0, 10);
+    const todayBit = data.bits.find((bit) => bit.scheduledDate === today && bit.status !== "done") ?? data.bits.find((bit) => bit.status !== "done") ?? data.bits[0];
+    const todayCards = data.cards.filter((card) => card.bitId === todayBit?.id).length;
+    const todayQuestions = data.questions.filter((question) => question.bitId === todayBit?.id).length;
     const completed = data.bits.filter((bit) => bit.status === "done").length;
-    return <><PageIntro eyebrow={`Today · ${bits.length} Bits`} title="Your study session" description="One focused pass is better than an overwhelming plan. Take these in order." action={<Chip tone="green"><Icon name="check" /> {completed} complete</Chip>} /><div className="grid gap-4">{bits.map((bit, index) => <Card key={bit.id} className={`p-5 sm:p-6 ${index === 0 ? "border-primary-100 ring-2 ring-primary-50" : ""}`}><div className="flex gap-4"><span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-lg ${index === 0 ? "bg-primary-600 text-white" : "bg-primary-50 text-primary-700"}`}><Icon name={index === 0 ? "book" : index === 1 ? "cards" : "quiz"} /></span><div className="min-w-0 flex-1"><div className="flex flex-wrap items-center justify-between gap-2"><h2 className="font-black text-slate-900">{bit.title}</h2><Chip tone={bit.status === "done" ? "green" : index === 1 ? "amber" : "slate"}>{bit.status === "done" ? "Complete" : index === 1 ? "Next up" : "Locked"}</Chip></div><p className="mt-2 text-sm leading-6 text-slate-500">{bit.content}</p>{index === 0 && <div className="mt-4"><ProgressBar value={bit.status === "done" ? 100 : 42} label="Bit progress" /></div>}{index < 2 && <Button href={index === 0 ? "/today" : "/flashcards"} variant={index === 0 ? "primary" : "secondary"} className="mt-5">{bit.status === "done" ? "Review Bit" : "Preview Bit"}<Icon name="arrow" /></Button>}</div></div></Card>)}</div></>;
+    return <><PageIntro eyebrow={`Today · ${todayBit?.scheduledDate ?? today}`} title="Your study session" description="One focused pass is better than an overwhelming plan. Finish this Bit, then keep your momentum." action={<Chip tone={todayBit?.status === "done" ? "green" : "blue"}><Icon name={todayBit?.status === "done" ? "check" : "clock"} /> {completed} complete</Chip>} />{todayBit && <Card className="border-primary-100 p-6 ring-2 ring-primary-50 sm:p-8"><div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between"><div><Chip>{todayBit.weight === 3 ? "High focus" : "Today&apos;s Bit"}</Chip><h2 className="mt-5 text-2xl font-black leading-tight text-slate-900 sm:text-3xl">{todayBit.title}</h2><p className="mt-4 max-w-2xl text-sm leading-7 text-slate-600">{todayBit.content}</p><div className="mt-6 rounded-2xl bg-primary-50 p-4"><p className="text-xs font-black uppercase tracking-wider text-primary-700">Takeaway</p><p className="mt-2 text-sm font-bold leading-6 text-primary-700">{todayBit.takeaway}</p></div></div><Chip tone={todayBit.status === "done" ? "green" : "amber"}>{todayBit.status === "done" ? "Complete" : `${todayBit.estMinutes} min`}</Chip></div><div className="mt-8 grid gap-3 sm:grid-cols-2"><Button href={`/flashcards?bit=${todayBit.id}`}><Icon name="cards" /> Practice flashcards <span className="text-primary-100">{todayCards}</span></Button><Button href={`/quiz?bit=${todayBit.id}`}><Icon name="quiz" /> Take quiz <span className="text-primary-100">{todayQuestions}</span></Button></div>{todayBit.status !== "done" && <button type="button" onClick={() => setBitStatus(todayBit.id, "done")} className="mt-4 min-h-11 w-full rounded-xl text-sm font-black text-success hover:bg-[#edf9f2]">✓ Mark Bit complete</button>}</Card>}</>;
 }
 
 function TimelineView({ data }: { data: StudyData }) {
+    const today = new Date().toISOString().slice(0, 10);
     const completed = data.bits.filter((bit) => bit.status === "done").length;
-    return <><PageIntro eyebrow="Your learning path" title="Timeline" description="See how your Bits build over time, one calm session at a time." action={<Button href="/new"><Icon name="plus" /> Add material</Button>} /><Card className="overflow-hidden"><div className="border-b border-line p-5 sm:p-6"><div className="flex items-center justify-between"><div><h2 className="font-black text-slate-900">Electrical Circuits</h2><p className="mt-1 text-sm text-slate-500">Exam {data.plan.examDate} · {data.bits.length} Bits</p></div><Chip tone="blue">In progress</Chip></div><div className="mt-5"><ProgressBar value={Math.round((completed / data.bits.length) * 100)} label={`${completed} of ${data.bits.length} complete`} /></div></div><div className="divide-y divide-line">{data.bits.map((bit) => <div key={bit.id} className="flex items-center gap-4 p-5"><span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-black ${bit.status === "done" ? "bg-success text-white" : "bg-primary-50 text-primary-700"}`}>{bit.status === "done" ? <Icon name="check" /> : bit.order}</span><div className="flex-1"><p className={`font-bold ${bit.status === "done" ? "text-slate-500 line-through" : "text-slate-900"}`}>{bit.title}</p><p className="mt-1 text-xs text-slate-400">{bit.status === "done" ? "Completed" : `${bit.scheduledDate} · ${bit.estMinutes} min`}</p></div>{bit.weight === 3 && <Chip tone="amber">Hard</Chip>}</div>)}</div></Card></>;
+    return <><PageIntro eyebrow="Your learning path" title="Timeline" description="See how your Bits build over time, one calm session at a time." action={<Button href="/new"><Icon name="plus" /> Add material</Button>} /><Card className="overflow-hidden"><div className="border-b border-line p-5 sm:p-6"><div className="flex items-center justify-between"><div><h2 className="font-black text-slate-900">Electrical Circuits</h2><p className="mt-1 text-sm text-slate-500">Exam {data.plan.examDate} · {data.bits.length} Bits</p></div><Chip tone="blue">In progress</Chip></div><div className="mt-5"><ProgressBar value={Math.round((completed / data.bits.length) * 100)} label={`${completed} of ${data.bits.length} complete`} /></div></div><div className="divide-y divide-line">{data.bits.map((bit) => { const status = bit.status === "done" ? "done" : bit.scheduledDate === today ? "today" : bit.scheduledDate < today ? "missed" : "upcoming"; return <div key={bit.id} className="flex items-center gap-4 p-5"><span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-black ${status === "done" ? "bg-success text-white" : status === "today" ? "bg-primary-600 text-white" : status === "missed" ? "bg-[#fff1f1] text-error" : "bg-primary-50 text-primary-700"}`}>{status === "done" ? <Icon name="check" /> : status === "missed" ? "!" : bit.order}</span><div className="flex-1"><p className={`font-bold ${status === "done" ? "text-slate-500 line-through" : "text-slate-900"}`}>{bit.title}</p><p className="mt-1 text-xs text-slate-400">{status === "done" ? "Done" : status === "today" ? "Today" : status === "missed" ? `Missed · ${bit.scheduledDate}` : `Upcoming · ${bit.scheduledDate}`}</p></div>{status === "today" && <Chip tone="blue">Today</Chip>}{bit.weight === 3 && status !== "done" && <Chip tone="amber">Hard</Chip>}</div>; })}</div></Card></>;
 }
 
 function StubView({ view, data }: { view: Exclude<View, "home" | "today" | "timeline">; data: StudyData }) {
@@ -168,5 +189,5 @@ export function StudyBitsApp({ view }: { view: View }) {
         questions: store.questions.length > 0 ? store.questions : mockData.questions,
     };
 
-    return <div className="min-h-screen bg-background pb-24 md:pb-8"><Header /><main className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-5 py-8 lg:px-8 lg:py-12">{view === "home" && <HomeView data={data} />}{view === "today" && <TodayView data={data} />}{view === "timeline" && <TimelineView data={data} />}{view !== "home" && view !== "today" && view !== "timeline" && <StubView view={view} data={data} />}</main><BottomTabs /></div>;
+    return <div className="min-h-screen bg-background pb-24 md:pb-8"><Header /><main className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-5 py-8 lg:px-8 lg:py-12">{view === "home" && <HomeView data={data} />}{view === "today" && <TodayView data={data} />}{view === "timeline" && <TimelineView data={data} />}{view === "flashcards" && <Suspense fallback={null}><FlashcardsView cards={data.cards} bits={data.bits} /></Suspense>}{view === "quiz" && <Suspense fallback={null}><QuizView questions={data.questions} bits={data.bits} /></Suspense>}{view !== "home" && view !== "today" && view !== "timeline" && view !== "flashcards" && view !== "quiz" && <StubView view={view} data={data} />}<LazyGeneration bits={data.bits} cards={data.cards} questions={data.questions} /></main><BottomTabs /></div>;
 }

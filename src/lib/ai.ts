@@ -1,7 +1,7 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import type { z } from "zod";
 
-const modelName = "gemini-2.0-flash";
+const modelName = "gemini-3.8-flash";
 
 export class ApiError extends Error {
   status: number;

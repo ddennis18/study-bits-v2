@@ -10,6 +10,7 @@ import type {
   QuizQuestion,
   ReviewResult,
 } from "./types";
+import { reviewSrs, type ReviewRating } from "./srs";
 
 type NewBit = Omit<Bit, "id">;
 type NewFlashcard = Omit<Flashcard, "id">;
@@ -27,7 +28,7 @@ type StudyStore = {
   setBitStatus: (id: string, status: BitStatus) => void;
   addCard: (card: NewFlashcard) => Flashcard;
   updateCard: (id: string, patch: Partial<Omit<Flashcard, "id" | "bitId">>) => void;
-  reviewCard: (id: string, rating: ReviewResult["rating"]) => void;
+  reviewCard: (id: string, rating: ReviewRating) => void;
   addQuestion: (question: NewQuestion) => QuizQuestion;
   updateQuestion: (id: string, patch: Partial<Omit<QuizQuestion, "id" | "bitId">>) => void;
   recordReviewResult: (result: Omit<ReviewResult, "id" | "reviewedAt"> & { reviewedAt?: string }) => void;
@@ -44,19 +45,6 @@ const initialState = {
 };
 
 const createId = (prefix: string) => `${prefix}-${crypto.randomUUID()}`;
-
-const reviewIntervals: Record<ReviewResult["rating"], number> = {
-  again: 0,
-  hard: 1,
-  good: 3,
-  easy: 7,
-};
-
-const nextSrsState = (rating: ReviewResult["rating"], reps: number) => {
-  if (rating === "again") return "learning" as const;
-  if (rating === "easy" || reps >= 2) return "review" as const;
-  return "learning" as const;
-};
 
 export const useStudyStore = create<StudyStore>()(
   persist(
@@ -79,20 +67,11 @@ export const useStudyStore = create<StudyStore>()(
       reviewCard: (id, rating) => {
         const card = get().cards.find((item) => item.id === id);
         if (!card) return;
-        const reps = rating === "again" ? card.srs.reps : card.srs.reps + 1;
-        const intervalDays = reviewIntervals[rating];
-        const due = new Date();
-        due.setDate(due.getDate() + intervalDays);
+        const examDate = get().plan?.examDate;
+        if (!examDate) return;
+        const nextSrs = reviewSrs(card.srs, rating, examDate);
         get().updateCard(id, {
-          srs: {
-            ...card.srs,
-            state: nextSrsState(rating, reps),
-            intervalDays,
-            due: due.toISOString().slice(0, 10),
-            reps,
-            lapses: rating === "again" ? card.srs.lapses + 1 : card.srs.lapses,
-            ease: Math.max(1.3, card.srs.ease + (rating === "easy" ? 0.15 : rating === "hard" ? -0.15 : rating === "again" ? -0.2 : 0)),
-          },
+          srs: nextSrs,
         });
         get().recordReviewResult({ cardId: id, rating });
       },
