@@ -1,8 +1,8 @@
 import type { Bit, Flashcard, Plan, QuizQuestion } from "./types";
 
 const planId = "plan-motion-01";
-const createdAt = "2026-10-03T08:00:00.000Z";
-const firstStudyDate = new Date("2026-10-04T00:00:00.000Z");
+const createdAt = "2026-10-10T08:00:00.000Z";
+const firstStudyDate = new Date("2026-10-10T00:00:00.000Z");
 
 const bitSeeds = [
   {
