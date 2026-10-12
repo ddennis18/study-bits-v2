@@ -12,12 +12,14 @@ const actionInstructions = {
 export async function POST(request: Request) {
   try {
     const { card, action } = refineInputSchema.parse(await request.json());
-    const result = await generateValidated(`Refine the following flashcard. Return JSON only with a single "result" string.
+    const result = await generateValidated(`Refine the following flashcard. Return JSON only, with no markdown or commentary.
+Return exactly one top-level property named "result" whose value is a non-empty string.
+Do not return any other properties.
 Action: ${action}
 Instruction: ${actionInstructions[action]}
 Front: ${card.front}
 Back: ${card.back}
-Source snippet: ${card.sourceSnippet ?? "Not provided"}`, refineResponseSchema);
+Source snippet: ${card.sourceSnippet ?? "Not provided"}`, refineResponseSchema, 1);
     return Response.json(result);
   } catch (error) {
     if (error instanceof ZodError) {

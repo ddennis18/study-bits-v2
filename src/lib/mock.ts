@@ -179,6 +179,7 @@ const bitSeeds = [
 
 export const mockPlan: Plan = {
   id: planId,
+  title: "Motion and Mechanics",
   examDate: "2026-10-14",
   dailyMinutes: 25,
   createdAt,

@@ -2,6 +2,7 @@ export type BitStatus = "todo" | "done";
 
 export type Plan = {
   id: string;
+  title: string;
   examDate: string;
   dailyMinutes: number;
   createdAt: string;

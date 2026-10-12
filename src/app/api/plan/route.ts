@@ -2,10 +2,15 @@ import { planInputSchema, planResponseSchema } from "@/lib/api-schemas";
 import { generateValidated, jsonError } from "@/lib/ai";
 import { ZodError } from "zod";
 
-const systemPrompt = `PLAN: You split study material into 'Bits': focused 5-20 minute units, each
-covering ONE concept. Keep content as verbatim slices of the source, do not
-rewrite it. For each Bit return title, content, a one-sentence takeaway, and
-weight 1-3 for difficulty. Return JSON only.`;
+const systemPrompt = `PLAN: Split the study material into focused 5-20 minute units called Bits,
+with one concept per Bit. Keep each Bit's content as a verbatim slice of the
+source; do not rewrite it. Return JSON only, with no markdown or commentary.
+The response must have exactly these two top-level properties: "title" and
+"bits". The "title" property must contain a concise,
+descriptive, non-empty string for the overall study plan. Each item in "bits"
+must have exactly these properties:
+"title" (non-empty string), "content" (non-empty string), "takeaway"
+(non-empty one-sentence string), and "weight" (the number 1, 2, or 3).`;
 
 const dayMilliseconds = 24 * 60 * 60 * 1000;
 
@@ -45,7 +50,7 @@ export async function POST(request: Request) {
     }
     const result = await generateValidated(`${systemPrompt}
 
-Return an object with a "bits" array containing at most ${capacity.maxBits} Bits. Do not include dates or IDs in the Bits.
+Return an object with a "title" string and a "bits" array containing at least 1 and at most ${capacity.maxBits} Bits. Do not include dates or IDs in the Bits.
 The exam date is ${input.examDate}; use it only to judge an appropriate amount of material.
 The learner has ${input.dailyMinutes} minutes per day.
 There are ${capacity.availableStudyDays} available study days before the two reserved review days.
@@ -54,7 +59,7 @@ ${capacity.estimatedBitMinutes} minutes, and do not exceed the maximum of ${capa
 Prioritize complete coverage of the most important material when the source is too large.
 
 Source material:
-${input.text}`, planResponseSchema);
+${input.text}`, planResponseSchema, 1);
     console.info("[api/plan] request succeeded", {
       durationMs: Date.now() - startedAt,
       bitCount: result.bits.length,

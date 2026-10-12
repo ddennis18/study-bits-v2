@@ -2,22 +2,31 @@ import { quizInputSchema, quizResponseSchema } from "@/lib/api-schemas";
 import { generateValidated, jsonError } from "@/lib/ai";
 import { ZodError } from "zod";
 
-const systemPrompt = `QUIZ: Write questions testing understanding, not trivia. MCQ has 4 options
-with plausible distractors. Every question needs a 1-2 sentence explanation
-of why the answer is right, an optional hint that doesn't give away the
-answer, a topic label, and difficulty 1-3. Only use facts in the text.
-Return JSON only.`;
+const systemPrompt = `QUIZ: Write questions testing understanding, not trivia, using only facts
+from the Bit text. Return JSON only, with no markdown or commentary. The
+response must have exactly one top-level property named "questions".
+Every question object must use exactly these property names:
+"type", "prompt", "options", "answer", "explanation", "hint", "difficulty",
+and "topic". "prompt" is the question text; do not call it "question" or
+"text". "type" must be "mcq", "tf", or "fill". "answer", "explanation",
+"difficulty", and "topic" are required. "hint" is optional. "options" is
+required for mcq and tf, and must be omitted for fill.`;
 
 export async function POST(request: Request) {
   try {
     const { bit } = quizInputSchema.parse(await request.json());
     const result = await generateValidated(`${systemPrompt}
 
-Return an object with a "questions" array containing exactly 4 questions: 2 "mcq", 1 "tf", and 1 "fill".
-For "mcq" include exactly four options. For "tf" include exactly ["True", "False"]. Do not include options for "fill".
+Return an object with a "questions" array containing exactly 4 question objects
+in this composition: 2 "mcq", 1 "tf", and 1 "fill".
+For every question, use "prompt" for the question text.
+For each "mcq", include exactly four string options.
+For "tf", include exactly the string options ["True", "False"].
+For "fill", omit the "options" property entirely.
+Use difficulty as the number 1, 2, or 3. Do not return a "short" question.
 Bit title: ${bit.title}
 Bit text:
-${bit.content}`, quizResponseSchema);
+${bit.content}`, quizResponseSchema, 3);
     return Response.json(result);
   } catch (error) {
     if (error instanceof ZodError) {

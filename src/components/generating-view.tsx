@@ -13,7 +13,7 @@ const stages = ["Reading your material", "Splitting into Bits", "Scheduling your
 
 type GenerationRequest = { text?: string; fileData?: string; fileName?: string; examDate: string; dailyMinutes: number };
 
-type PlanResponse = { bits: Array<{ title: string; content: string; takeaway: string; weight: 1 | 2 | 3 }> };
+type PlanResponse = { title: string; bits: Array<{ title: string; content: string; takeaway: string; weight: 1 | 2 | 3 }> };
 type CardsResponse = { cards: Array<{ front: string; back: string; sourceSnippet: string }> };
 type QuizResponse = { questions: Array<Omit<QuizQuestion, "id" | "bitId" | "flagged">> };
 
@@ -57,9 +57,9 @@ export function GeneratingView() {
       const unscheduledBits: Bit[] = planResult.bits.map((bit, index) => ({ id: `${planId}-bit-${index + 1}`, planId, order: index + 1, ...bit, estMinutes: Math.min(20, Math.max(5, Math.round(request.dailyMinutes / 2))), scheduledDate: today, status: "todo" }));
       setStage(2);
       const bits = scheduleBits(unscheduledBits, request.examDate, request.dailyMinutes);
-      const plan: Plan = { id: planId, examDate: request.examDate, dailyMinutes: request.dailyMinutes, createdAt: new Date().toISOString() };
+      const plan: Plan = { id: planId, title: planResult.title, examDate: request.examDate, dailyMinutes: request.dailyMinutes, createdAt: new Date().toISOString() };
       setStage(3);
-      const firstBits = bits.slice(0, 3);
+      const firstBits = bits.slice(0, 1);
       const generated = await Promise.all(firstBits.map(async (bit) => {
         const [cardsResult, quizResult] = await Promise.all([
           jsonRequest<CardsResponse>("/api/cards", { bit }),

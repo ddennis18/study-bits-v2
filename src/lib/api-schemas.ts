@@ -7,6 +7,7 @@ export const planInputSchema = z.object({
 });
 
 export const planResponseSchema = z.object({
+  title: z.string().min(1),
   bits: z.array(z.object({
     title: z.string().min(1),
     content: z.string().min(1),

@@ -2,7 +2,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import type { z } from "zod";
 
 const modelName = process.env.GEMINI_MODEL?.trim() || "gemini-3.8-flash";
-let nextKeyIndex = 0;
+export type ApiKeySlot = 1 | 2 | 3;
 
 export class ApiError extends Error {
   status: number;
@@ -14,12 +14,10 @@ export class ApiError extends Error {
   }
 }
 
-function getApiKeys() {
-  const keys = [process.env.GEMINI_API_KEY, process.env.GEMINI_API_KEY_2, process.env.GEMINI_API_KEY_3]
-    .map((key) => key?.trim())
-    .filter((key): key is string => Boolean(key));
-  if (keys.length === 0) throw new ApiError("No Gemini API key is configured.", 503);
-  return keys;
+function getApiKey(slot: ApiKeySlot) {
+  const key = [process.env.GEMINI_API_KEY, process.env.GEMINI_API_KEY_2, process.env.GEMINI_API_KEY_3][slot - 1]?.trim();
+  if (!key) throw new ApiError(`Gemini API key ${slot} is not configured.`, 503);
+  return key;
 }
 
 function getModel(apiKey: string) {
@@ -37,23 +35,20 @@ function parseJson(text: string): unknown {
   return JSON.parse(cleaned);
 }
 
-export async function generateValidated<T>(prompt: string, schema: z.ZodType<T>): Promise<T> {
-  const keys = getApiKeys();
+export async function generateValidated<T>(prompt: string, schema: z.ZodType<T>, keySlot: ApiKeySlot): Promise<T> {
+  const apiKey = getApiKey(keySlot);
   let lastError = "The response was not valid JSON matching the required schema.";
 
   for (let attempt = 0; attempt < 3; attempt += 1) {
     const attemptStartedAt = Date.now();
-    const keySlot = nextKeyIndex % keys.length;
     try {
-      const apiKey = keys[keySlot];
-      nextKeyIndex = (nextKeyIndex + 1) % keys.length;
       const model = getModel(apiKey);
       const response = await model.generateContent(attempt === 0 ? prompt : `${prompt}\n\nYour previous response was invalid. Return only corrected JSON that matches the requested shape exactly. Do not include markdown fences or commentary.`);
       const parsed = parseJson(response.response.text());
       const result = schema.parse(parsed);
       console.info("[ai] generation succeeded", {
         attempt: attempt + 1,
-        keySlot: keySlot + 1,
+        keySlot,
         durationMs: Date.now() - attemptStartedAt,
       });
       return result;
@@ -62,7 +57,7 @@ export async function generateValidated<T>(prompt: string, schema: z.ZodType<T>)
       lastError = error instanceof Error ? error.message : lastError;
       console.warn("[ai] generation attempt failed", {
         attempt: attempt + 1,
-        keySlot: keySlot + 1,
+        keySlot,
         durationMs: Date.now() - attemptStartedAt,
         error: lastError,
       });

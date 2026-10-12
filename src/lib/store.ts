@@ -18,6 +18,7 @@ type NewQuestion = Omit<QuizQuestion, "id">;
 
 type StudyStore = {
   plan: Plan | null;
+  plans: Plan[];
   bits: Bit[];
   cards: Flashcard[];
   questions: QuizQuestion[];
@@ -38,6 +39,7 @@ type StudyStore = {
 
 const initialState = {
   plan: null,
+  plans: [] as Plan[],
   bits: [] as Bit[],
   cards: [] as Flashcard[],
   questions: [] as QuizQuestion[],
@@ -50,7 +52,10 @@ export const useStudyStore = create<StudyStore>()(
   persist(
     (set, get) => ({
       ...initialState,
-      setPlan: (plan) => set({ plan }),
+      setPlan: (plan) => set((state) => ({
+        plan,
+        plans: plan ? [...state.plans.filter((item) => item.id !== plan.id), plan] : state.plans,
+      })),
       addBit: (bit) => {
         const created = { ...bit, id: createId("bit") };
         set((state) => ({ bits: [...state.bits, created] }));
@@ -82,7 +87,11 @@ export const useStudyStore = create<StudyStore>()(
       },
       updateQuestion: (id, patch) => set((state) => ({ questions: state.questions.map((question) => question.id === id ? { ...question, ...patch } : question) })),
       recordReviewResult: (result) => set((state) => ({ reviewResults: [...state.reviewResults, { ...result, id: createId("review"), reviewedAt: result.reviewedAt ?? new Date().toISOString() }] })),
-      seed: (data) => set({ ...data, reviewResults: [] }),
+      seed: (data) => set((state) => ({
+        ...data,
+        plans: [...state.plans.filter((item) => item.id !== data.plan.id), data.plan],
+        reviewResults: [],
+      })),
       reset: () => set(initialState),
     }),
     {
