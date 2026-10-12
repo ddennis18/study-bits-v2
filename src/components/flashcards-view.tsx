@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { previewIntervals, type ReviewRating } from "@/lib/srs";
 import { useStudyStore } from "@/lib/store";
 import type { Bit, Flashcard } from "@/lib/types";
-import { Button, Card, Chip, Icon, ProgressBar, Toast } from "./study-bits-app";
+import { Button, Card, Chip, Icon, LoadingPanel, ProgressBar, Toast } from "./study-bits-app";
 
 type FlashcardsViewProps = {
   cards: Flashcard[];
@@ -34,6 +34,8 @@ export function FlashcardsView({ cards, bits }: FlashcardsViewProps) {
   const searchParams = useSearchParams();
   const scopedBitId = searchParams.get("bit");
   const scopedCards = scopedBitId ? cards.filter((card) => card.bitId === scopedBitId) : cards;
+  const [failedBitId, setFailedBitId] = useState<string | null>(null);
+  const isPreparing = Boolean(scopedBitId && scopedBitId !== failedBitId && bits.some((bit) => bit.id === scopedBitId) && scopedCards.length === 0);
   const [now] = useState(() => new Date());
   const [currentCardId, setCurrentCardId] = useState<string | null>(() => scopedCards[0]?.id ?? null);
   const [flipped, setFlipped] = useState(false);
@@ -56,6 +58,16 @@ export function FlashcardsView({ cards, bits }: FlashcardsViewProps) {
   const learningCount = scopedCards.filter((card) => card.srs.state === "learning").length;
   const dueCount = scopedCards.filter((card) => isDue(card, now)).length;
   const nextDue = scopedCards.filter((card) => !isDue(card, now)).sort((a, b) => new Date(a.srs.due).getTime() - new Date(b.srs.due).getTime())[0];
+
+  useEffect(() => {
+    if (!scopedBitId) return;
+    const onGenerationError = (event: Event) => {
+      const detail = (event as CustomEvent<{ bitId?: string }>).detail;
+      if (detail?.bitId === scopedBitId) setFailedBitId(scopedBitId);
+    };
+    window.addEventListener("studybits:generation-error", onGenerationError);
+    return () => window.removeEventListener("studybits:generation-error", onGenerationError);
+  }, [scopedBitId]);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -117,6 +129,10 @@ export function FlashcardsView({ cards, bits }: FlashcardsViewProps) {
     } finally {
       setRefining(false);
     }
+  }
+
+  if (isPreparing) {
+    return <LoadingPanel title="Preparing your flashcards" description="Creating cards for this Bit. They will appear here as soon as they are ready." />;
   }
 
   return <div className="mx-auto flex w-full max-w-4xl flex-col gap-6">

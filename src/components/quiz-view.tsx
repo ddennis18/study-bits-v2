@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import type { Bit, QuizQuestion } from "@/lib/types";
 import { useStudyStore } from "@/lib/store";
-import { Button, Card, Chip, Icon, ProgressBar } from "./study-bits-app";
+import { Button, Card, Chip, Icon, LoadingPanel, ProgressBar } from "./study-bits-app";
 
 type QuizMode = "quiz" | "study";
 type AnswerState = { value: string; correct: boolean };
@@ -33,6 +33,8 @@ export function QuizView({ questions, bits }: QuizViewProps) {
   const scopedBitId = searchParams.get("bit");
   const updateQuestion = useStudyStore((state) => state.updateQuestion);
   const availableQuestions = questions.filter((question) => supportedTypes.has(question.type) && (!scopedBitId || question.bitId === scopedBitId));
+  const [failedBitId, setFailedBitId] = useState<string | null>(null);
+  const isPreparing = Boolean(scopedBitId && scopedBitId !== failedBitId && bits.some((bit) => bit.id === scopedBitId) && availableQuestions.length === 0);
   const [sessionIds, setSessionIds] = useState(() => availableQuestions.slice(0, 8).map((question) => question.id));
   const sessionQuestions = sessionIds.map((id) => questions.find((question) => question.id === id)).filter((question): question is QuizQuestion => Boolean(question));
   const [mode, setMode] = useState<QuizMode>("quiz");
@@ -50,6 +52,16 @@ export function QuizView({ questions, bits }: QuizViewProps) {
   const gradedAnswers = sessionQuestions.filter((item) => answers[item.id] && !item.flagged);
   const score = gradedAnswers.filter((item) => answers[item.id].correct).length;
   const answeredPercent = sessionQuestions.length === 0 ? 0 : Math.round((answeredCount / sessionQuestions.length) * 100);
+
+  useEffect(() => {
+    if (!scopedBitId) return;
+    const onGenerationError = (event: Event) => {
+      const detail = (event as CustomEvent<{ bitId?: string }>).detail;
+      if (detail?.bitId === scopedBitId) setFailedBitId(scopedBitId);
+    };
+    window.addEventListener("studybits:generation-error", onGenerationError);
+    return () => window.removeEventListener("studybits:generation-error", onGenerationError);
+  }, [scopedBitId]);
 
   function submitAnswer(value: string) {
     if (!question || answer) return;
@@ -93,6 +105,10 @@ export function QuizView({ questions, bits }: QuizViewProps) {
     if (!question) return;
     updateQuestion(question.id, { flagged: !question.flagged });
     setFlagNotice(true);
+  }
+
+  if (isPreparing) {
+    return <LoadingPanel title="Preparing your quiz" description="Writing questions for this Bit. Your quiz will appear here as soon as it is ready." />;
   }
 
   if (summary) {

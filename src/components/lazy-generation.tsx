@@ -44,10 +44,11 @@ export function LazyGeneration({ bits, cards, questions }: { bits: Bit[]; cards:
       cardsResult?.cards.forEach((card) => addCard({ bitId: requestedBit.id, ...card, srs: { state: "new", ease: 2.5, intervalDays: 0, due: requestedBit.scheduledDate, reps: 0, lapses: 0 } }));
       quizResult?.questions.forEach((question) => addQuestion({ bitId: requestedBit.id, ...question, flagged: false }));
     }).catch(() => {
+      window.dispatchEvent(new CustomEvent("studybits:generation-error", { detail: { bitId: requestedBit.id } }));
       setError("This Bit could not be prepared yet. Try again when you return.");
       requested.current.delete(requestedBit.id);
     });
   }, [addCard, addQuestion, hasCards, hasQuestions, needsGeneration, requestedBit]);
 
-  return needsGeneration ? <><div role="status" className="flex items-center gap-3 rounded-2xl border border-line bg-white p-4 text-sm font-bold text-slate-600"><Skeleton className="h-8 w-8 shrink-0" /><span>Preparing study material...</span></div>{error && <Toast message={error} />}</> : null;
+  return needsGeneration && !error ? <><div role="status" className="flex items-center gap-3 rounded-2xl border border-line bg-white p-4 text-sm font-bold text-slate-600"><Skeleton className="h-8 w-8 shrink-0" /><span>Preparing study material...</span></div>{error && <Toast message={error} />}</> : error ? <Toast message={error} /> : null;
 }

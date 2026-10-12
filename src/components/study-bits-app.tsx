@@ -65,6 +65,14 @@ export function Skeleton({ className = "" }: { className?: string }) {
     return <div aria-hidden="true" className={`animate-pulse rounded-xl bg-primary-50 ${className}`} />;
 }
 
+export function LoadingPanel({ title, description }: { title: string; description: string }) {
+    return <Card className="mx-auto flex min-h-72 w-full max-w-3xl flex-col items-center justify-center px-6 py-12 text-center" aria-live="polite">
+        <Skeleton className="h-14 w-14 rounded-2xl" />
+        <h1 className="mt-6 text-2xl font-black text-slate-900">{title}</h1>
+        <p className="mt-2 max-w-sm text-sm leading-6 text-slate-500">{description}</p>
+    </Card>;
+}
+
 export function Toast({ message, onClose }: { message: string; onClose?: () => void }) {
     return <div role="alert" className="fixed inset-x-4 bottom-5 z-50 mx-auto flex max-w-md items-start gap-3 rounded-2xl border border-error/20 bg-white p-4 shadow-[0_12px_40px_rgba(0,95,146,0.18)]"><span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#fff1f1] font-black text-error">!</span><p className="flex-1 text-sm font-bold leading-6 text-slate-700">{message}</p>{onClose && <button type="button" onClick={onClose} className="min-h-8 min-w-8 rounded-lg text-xl text-slate-400 hover:bg-primary-50" aria-label="Dismiss notification">×</button>}</div>;
 }
@@ -203,5 +211,5 @@ export function StudyBitsApp({ view }: { view: View }) {
         questions: store.questions.length > 0 ? store.questions : mockData.questions,
     };
 
-    return <div className="min-h-screen bg-background pb-24 md:pb-8"><Header /><main className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-5 py-8 lg:px-8 lg:py-12">{view === "home" && <HomeView data={data} />}{view === "today" && <TodayView data={data} />}{view === "timeline" && <TimelineView data={data} />}{view === "flashcards" && <Suspense fallback={null}><FlashcardsView cards={data.cards} bits={data.bits} /></Suspense>}{view === "quiz" && <Suspense fallback={null}><QuizView questions={data.questions} bits={data.bits} /></Suspense>}{view !== "home" && view !== "today" && view !== "timeline" && view !== "flashcards" && view !== "quiz" && <StubView view={view} data={data} />}<Suspense fallback={null}><LazyGeneration bits={data.bits} cards={data.cards} questions={data.questions} /></Suspense></main><BottomTabs /></div>;
+    return <div className="min-h-screen bg-background pb-24 md:pb-8"><Header /><main className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-5 py-8 lg:px-8 lg:py-12">{view === "home" && <HomeView data={data} />}{view === "today" && <TodayView data={data} />}{view === "timeline" && <TimelineView data={data} />}{view === "flashcards" && <Suspense fallback={<LoadingPanel title="Opening flashcards" description="Loading your study deck..." />}><FlashcardsView cards={data.cards} bits={data.bits} /></Suspense>}{view === "quiz" && <Suspense fallback={<LoadingPanel title="Opening your quiz" description="Loading your questions..." />}><QuizView questions={data.questions} bits={data.bits} /></Suspense>}{view !== "home" && view !== "today" && view !== "timeline" && view !== "flashcards" && view !== "quiz" && <StubView view={view} data={data} />}<Suspense fallback={null}><LazyGeneration bits={data.bits} cards={data.cards} questions={data.questions} /></Suspense></main><BottomTabs /></div>;
 }
